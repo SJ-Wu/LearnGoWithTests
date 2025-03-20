@@ -1,11 +1,7 @@
 package forLoop
 
-const repeatCount = 5
+import "strings"
 
-func Repeat(word string) string {
-	repeated := ""
-	for i := 0; i < repeatCount; i++ {
-		repeated += word
-	}
-	return repeated
+func Repeat(word string, times int) string {
+	return strings.Repeat(word, times)
 }
