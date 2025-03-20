@@ -1,6 +1,8 @@
-package main
+package helloWorld
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestHello(t *testing.T) {
 	t.Run("Saying hello to someone", func(t *testing.T) {
