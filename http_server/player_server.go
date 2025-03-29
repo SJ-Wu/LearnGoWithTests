@@ -16,7 +16,11 @@ type PlayerStore interface {
 
 func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	player := r.URL.Path[len("/players/"):]
-	_, _ = fmt.Fprint(w, p.store.GetPlayerScore(player))
+	score := p.store.GetPlayerScore(player)
+	if score == 0 {
+		w.WriteHeader(http.StatusNotFound)
+	}
+	_, _ = fmt.Fprint(w, score)
 
 }
 
@@ -34,6 +38,7 @@ type InMemoryPlayerStore struct {
 }
 
 func (i *InMemoryPlayerStore) GetPlayerScore(player string) int {
+	player = ""
 	return 123
 }
 
