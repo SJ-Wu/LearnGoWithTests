@@ -14,7 +14,14 @@ type PlayerStore interface {
 	GetPlayerScore(player string) int
 }
 
+func NewPlayerServer(store PlayerStore) *PlayerServer {
+	return &PlayerServer{store: store}
+}
+
 func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		w.WriteHeader(http.StatusAccepted)
+	}
 	player := r.URL.Path[len("/players/"):]
 	score := p.store.GetPlayerScore(player)
 	if score == 0 {
