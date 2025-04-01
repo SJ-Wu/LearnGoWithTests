@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 )
-
-type PlayerServer struct {
-	store PlayerStore
-}
 
 type PlayerStore interface {
 	GetPlayerScore(player string) int
 	RecordWin(player string)
+}
+
+type PlayerServer struct {
+	store PlayerStore
 }
 
 func NewPlayerServer(store PlayerStore) *PlayerServer {
@@ -40,28 +39,4 @@ func (p *PlayerServer) showScore(w http.ResponseWriter, player string) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 	_, _ = fmt.Fprint(w, score)
-}
-
-func NewInMemoryPlayerStore() *InMemoryPlayerStore {
-	return &InMemoryPlayerStore{map[string]int{}}
-}
-
-type InMemoryPlayerStore struct {
-	store map[string]int
-}
-
-func (i *InMemoryPlayerStore) RecordWin(player string) {
-	i.store[player]++
-}
-
-func (i *InMemoryPlayerStore) GetPlayerScore(player string) int {
-	return i.store[player]
-}
-
-func main() {
-	server := &PlayerServer{NewInMemoryPlayerStore()}
-
-	if err := http.ListenAndServe(":8080", server); err != nil {
-		log.Fatalf("could not listen on port 8080 %v", err)
-	}
 }
