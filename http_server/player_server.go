@@ -42,31 +42,24 @@ func (p *PlayerServer) showScore(w http.ResponseWriter, player string) {
 	_, _ = fmt.Fprint(w, score)
 }
 
-func (p *PlayerServer) GetPlayerScore(player string) string {
-	if player == "Pepper" {
-		return "20"
-	}
-	if player == "Floyd" {
-		return "10"
-	}
-	return "0"
+func NewInMemoryPlayerStore() *InMemoryPlayerStore {
+	return &InMemoryPlayerStore{map[string]int{}}
 }
 
 type InMemoryPlayerStore struct {
+	store map[string]int
 }
 
 func (i *InMemoryPlayerStore) RecordWin(player string) {
-	//TODO implement me
-	panic("implement me")
+	i.store[player]++
 }
 
 func (i *InMemoryPlayerStore) GetPlayerScore(player string) int {
-	player = ""
-	return 123
+	return i.store[player]
 }
 
 func main() {
-	server := &PlayerServer{&InMemoryPlayerStore{}}
+	server := &PlayerServer{NewInMemoryPlayerStore()}
 
 	if err := http.ListenAndServe(":8080", server); err != nil {
 		log.Fatalf("could not listen on port 8080 %v", err)

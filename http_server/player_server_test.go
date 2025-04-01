@@ -64,37 +64,38 @@ func TestStoreWins(t *testing.T) {
 	}
 	server := NewPlayerServer(&store)
 
-	t.Run("it returns accepted on POST", func(t *testing.T) {
-		request := newPostWinRequest("Pepper")
-		response := httptest.NewRecorder()
+	player := "Other"
 
-		server.ServeHTTP(response, request)
+	request := newPostWinRequest(player)
+	response := httptest.NewRecorder()
 
-		assertStatus(t, response.Code, http.StatusAccepted)
+	server.ServeHTTP(response, request)
 
-		if len(store.winCalls) != 1 {
-			t.Errorf("did not record win, got %d, want 1", len(store.winCalls))
-		}
-	})
+	assertStatus(t, response.Code, http.StatusAccepted)
 
-	t.Run("it records wins on POST", func(t *testing.T) {
-		player := "Other"
+	if len(store.winCalls) != 1 {
+		t.Fatalf("got %d calls to RecordWin want %d", len(store.winCalls), 1)
+	}
 
-		request := newPostWinRequest(player)
-		response := httptest.NewRecorder()
+	if store.winCalls[0] != player {
+		t.Errorf("did not store correct winner got '%s' want '%s'", store.winCalls[0], player)
+	}
+}
 
-		server.ServeHTTP(response, request)
+func TestRecordingWinsAndRetrievingThem(t *testing.T) {
+	store := NewInMemoryPlayerStore()
+	server := PlayerServer{store}
+	player := "Pepper"
 
-		assertStatus(t, response.Code, http.StatusAccepted)
+	server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest(player))
+	server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest(player))
+	server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest(player))
 
-		if len(store.winCalls) != 1 {
-			t.Fatalf("got %d calls to RecordWin want %d", len(store.winCalls), 1)
-		}
+	response := httptest.NewRecorder()
+	server.ServeHTTP(response, newGetScoreRequest(player))
+	assertStatus(t, response.Code, http.StatusOK)
 
-		if store.winCalls[0] != player {
-			t.Errorf("did not store correct winner got '%s' want '%s'", store.winCalls[0], player)
-		}
-	})
+	assertResponseBody(t, response.Body.String(), "3")
 }
 
 func newPostWinRequest(player string) *http.Request {
